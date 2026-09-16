@@ -1,9 +1,13 @@
 from dataclasses import replace
 from datetime import UTC, datetime
 
+from src.matcher import rules as rules_module
 from src.matcher.rules import (
     classify_seniority,
+    is_blacklisted,
+    is_vip,
     matched_stack_terms,
+    passes_formacao_filter,
     passes_geo_filter,
     within_backfill_window,
 )
@@ -119,3 +123,88 @@ def test_backfill_rejects_missing_published_date():
     reference_now = datetime(2026, 9, 16, 20, 0, 0, tzinfo=UTC)
     vaga = replace(BASE_VAGA, published_at=None)
     assert within_backfill_window(vaga, reference_now) is False
+
+
+# --- VIP / blacklist de empresas (spec 0002) ---
+
+
+def test_is_vip_matches_company_field_case_and_accent_insensitive():
+    vaga = replace(BASE_VAGA, company="Nubank")
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_matches_via_title_when_company_is_stylized():
+    """Mitigacao de slogan de carreira estilizado (ex.: Gupy #SANGUELARANJA):
+    o termo VIP pode bater no titulo mesmo quando company nao ajuda."""
+    vaga = replace(BASE_VAGA, company="#SANGUELARANJA", title="Estagiario Itau de Tecnologia")
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_matches_via_description_first_500_chars():
+    vaga = replace(
+        BASE_VAGA, company="Globalweb", title="Estagio", description="Vem trabalhar na Stone!"
+    )
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_false_when_no_match():
+    vaga = replace(BASE_VAGA, company="Acme")
+    assert is_vip(vaga) is False
+
+
+def test_is_blacklisted_true_when_company_in_list(monkeypatch):
+    monkeypatch.setattr(rules_module, "BLACKLIST_COMPANIES", ["acme"])
+    vaga = replace(BASE_VAGA, company="Acme")
+    assert is_blacklisted(vaga) is True
+
+
+def test_is_blacklisted_false_by_default():
+    """BLACKLIST_COMPANIES comeca vazia (spec 0002) — nenhuma empresa bloqueada."""
+    vaga = replace(BASE_VAGA, company="Qualquer Empresa")
+    assert is_blacklisted(vaga) is False
+
+
+# --- filtro de elegibilidade por formacao (spec 0002) ---
+
+
+def test_formacao_accepts_range_including_target_year():
+    vaga = replace(
+        BASE_VAGA,
+        description="Previsão de conclusão do curso: entre Dezembro/2026 e Dezembro/2027.",
+    )
+    assert passes_formacao_filter(vaga) is True
+
+
+def test_formacao_accepts_from_target_year_onward():
+    vaga = replace(
+        BASE_VAGA,
+        description=(
+            "Formação superior em andamento com previsão de formatura a partir de 12/2027."
+        ),
+    )
+    assert passes_formacao_filter(vaga) is True
+
+
+def test_formacao_accepts_range_phrasing_without_month():
+    vaga = replace(
+        BASE_VAGA,
+        description=(
+            "Disponibilidade para estagiar por pelo menos 1 ano (conclusão entre 2026 e 2027)."
+        ),
+    )
+    assert passes_formacao_filter(vaga) is True
+
+
+def test_formacao_rejects_deadline_before_target_year():
+    vaga = replace(BASE_VAGA, description="Buscamos estudantes com formatura até dez/2026.")
+    assert passes_formacao_filter(vaga) is False
+
+
+def test_formacao_rejects_single_year_before_target():
+    vaga = replace(BASE_VAGA, description="Requisito: conclusão em 2025.")
+    assert passes_formacao_filter(vaga) is False
+
+
+def test_formacao_accepts_when_no_mention():
+    vaga = replace(BASE_VAGA, description="Java, Spring Boot e vontade de aprender.")
+    assert passes_formacao_filter(vaga) is True

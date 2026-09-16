@@ -7,10 +7,13 @@ from datetime import UTC, datetime
 from dotenv import load_dotenv
 
 from src.alerter.telegram import format_message, send_message
+from src.exporter.markdown import append_ats_entry
 from src.matcher.rules import (
     classify_seniority,
-    is_stack_match,
+    is_blacklisted,
+    is_vip,
     matched_stack_terms,
+    passes_formacao_filter,
     passes_geo_filter,
     within_backfill_window,
 )
@@ -23,6 +26,7 @@ from src.storage.db import connect, insert_vaga, mark_alerted
 SEARCH_TERMS = ["estagio", "estágio", "junior", "júnior", "trainee"]
 
 DB_PATH = "vagas.db"
+ATS_EXPORT_PATH = "vagas_ats.md"
 
 # Defesa extra alem da janela de backfill de 24h (issue #1 ponto 6): mesmo com
 # volume reduzido, um intervalo minimo entre envios reais evita estourar o
@@ -56,6 +60,8 @@ def run(debug: bool) -> None:
     sent = 0
 
     for vaga in candidates.values():
+        if is_blacklisted(vaga):
+            continue
         if not passes_geo_filter(vaga):
             continue
         seniority = classify_seniority(vaga)
@@ -63,19 +69,23 @@ def run(debug: bool) -> None:
             continue
         if not within_backfill_window(vaga, reference_now):
             continue
+        if not passes_formacao_filter(vaga):
+            continue
         terms = matched_stack_terms(vaga)
-        if not is_stack_match(vaga):
+        vip = is_vip(vaga)
+        if not terms and not vip:
             continue
 
         is_new = insert_vaga(conn, vaga, matched_terms=terms, seniority=seniority)
         if not is_new:
             continue
 
-        text = format_message(vaga, terms)
+        text = format_message(vaga, terms, vip=vip)
 
         if debug:
             print(f"[DEBUG] enviaria:\n{text}\n")
         else:
+            append_ats_entry(vaga, terms, seniority, vip, path=ATS_EXPORT_PATH)
             send_message(token, chat_id, text)
             mark_alerted(conn, vaga.source, vaga.external_id)
             time.sleep(MIN_SECONDS_BETWEEN_SENDS)

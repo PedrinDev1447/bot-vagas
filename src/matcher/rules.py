@@ -8,6 +8,37 @@ from src.scraper.base import Vaga
 # Issue #1: lista fixa, sem pesos — score ponderado fica pra issue #Z.
 MINHA_STACK = ["java", "spring boot", "react", "typescript", "aws"]
 
+# Empresas que sempre alertam, mesmo sem termo de MINHA_STACK no texto (bypassa
+# is_stack_match — spec 0002). Sem YAML ainda, mesmo estilo enxuto de MINHA_STACK.
+VIP_COMPANIES = [
+    "itau",
+    "itaú",
+    "nubank",
+    "mercado livre",
+    "ifood",
+    "stone",
+    "xp",
+    "inter",
+    "quintoandar",
+    "ambev tech",
+    "aws",
+    "microsoft",
+    "google",
+]
+
+# Empresas que nunca alertam, independente de match de stack ou VIP.
+# Vazia por padrao — estrutura pronta pra adicoes futuras.
+BLACKLIST_COMPANIES: list[str] = []
+
+# Minha previsao de formatura (spec 0002). So o ano entra na comparacao.
+MINHA_FORMACAO_ANO = 2027
+
+# Janela de caracteres apos a keyword de formacao onde procuramos um ano —
+# grande o suficiente pra cobrir frases como "conclusao... entre X e Y".
+FORMACAO_WINDOW_CHARS = 100
+FORMACAO_KEYWORD_PATTERN = re.compile(r"formaca|formatura|conclu|formand")
+FORMACAO_YEAR_PATTERN = re.compile(r"\b(20[2-3]\d)\b")
+
 SP_NORMALIZED = "sao paulo"
 
 # D4: a positiva vence a de exclusao quando ambas batem (ex.: "Junior/Pleno"
@@ -63,6 +94,44 @@ def matched_stack_terms(vaga: Vaga) -> list[str]:
 
 def is_stack_match(vaga: Vaga) -> bool:
     return len(matched_stack_terms(vaga)) >= 1
+
+
+def _company_haystack(vaga: Vaga) -> str:
+    """company (careerPageName) + title + primeiros 500 chars da description,
+    normalizados — mitigacao de slogan de carreira estilizado (ex.: Gupy
+    #SANGUELARANJA) na deteccao de VIP/blacklist (spec 0002)."""
+    return normalize(f"{vaga.company}\n{vaga.title}\n{vaga.description[:500]}")
+
+
+def _matches_company_list(vaga: Vaga, companies: list[str]) -> bool:
+    haystack = _company_haystack(vaga)
+    return any(normalize(company) in haystack for company in companies)
+
+
+def is_vip(vaga: Vaga) -> bool:
+    return _matches_company_list(vaga, VIP_COMPANIES)
+
+
+def is_blacklisted(vaga: Vaga) -> bool:
+    return _matches_company_list(vaga, BLACKLIST_COMPANIES)
+
+
+def passes_formacao_filter(vaga: Vaga) -> bool:
+    """Conservador (spec 0002): so rejeita se a description citar
+    formatura/conclusao limitada a um ano estritamente anterior a
+    MINHA_FORMACAO_ANO. Sem mencao ou ambiguo -> aceita (recall-first, D1 da
+    spec 0001) — o erro sempre pende pra aceitar, nunca pra descartar."""
+    text = normalize(vaga.description)
+    years_found = [
+        int(year)
+        for match in FORMACAO_KEYWORD_PATTERN.finditer(text)
+        for year in FORMACAO_YEAR_PATTERN.findall(
+            text[match.end() : match.end() + FORMACAO_WINDOW_CHARS]
+        )
+    ]
+    if not years_found:
+        return True
+    return max(years_found) >= MINHA_FORMACAO_ANO
 
 
 def within_backfill_window(vaga: Vaga, reference_now: datetime, window_hours: int = 24) -> bool:
