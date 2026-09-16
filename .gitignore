@@ -1,2 +1,9 @@
 ﻿graphify-out/cost.json
 graphify-out/cache/
+
+# bot-vagas
+.env
+.venv/
+vagas.db
+__pycache__/
+*.pyc

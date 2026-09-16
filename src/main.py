@@ -1,9 +1,12 @@
 import argparse
 import os
 import sys
+import time
 from datetime import UTC, datetime
 
-from src.alerter.telegram import send_message
+from dotenv import load_dotenv
+
+from src.alerter.telegram import format_message, send_message
 from src.matcher.rules import (
     classify_seniority,
     is_stack_match,
@@ -20,6 +23,11 @@ from src.storage.db import connect, insert_vaga, mark_alerted
 SEARCH_TERMS = ["estagio", "estágio", "junior", "júnior", "trainee"]
 
 DB_PATH = "vagas.db"
+
+# Defesa extra alem da janela de backfill de 24h (issue #1 ponto 6): mesmo com
+# volume reduzido, um intervalo minimo entre envios reais evita estourar o
+# limite de ~1 msg/s por chat da API do Telegram (429 + retry_after).
+MIN_SECONDS_BETWEEN_SENDS = 1.0
 
 
 def collect_candidates(scraper: GupyScraper) -> dict[str, Vaga]:
@@ -63,18 +71,14 @@ def run(debug: bool) -> None:
         if not is_new:
             continue
 
-        text = (
-            f"{vaga.title} — {vaga.company}\n"
-            f"{vaga.workplace_type} | {vaga.city or 'remoto'}\n"
-            f"Termos: {', '.join(terms)}\n"
-            f"{vaga.url}"
-        )
+        text = format_message(vaga, terms)
 
         if debug:
             print(f"[DEBUG] enviaria:\n{text}\n")
         else:
             send_message(token, chat_id, text)
             mark_alerted(conn, vaga.source, vaga.external_id)
+            time.sleep(MIN_SECONDS_BETWEEN_SENDS)
 
         sent += 1
 
@@ -84,6 +88,7 @@ def run(debug: bool) -> None:
 def main() -> None:
     # Terminal do Windows costuma abrir em cp1252; titulo/descricao tem acento.
     sys.stdout.reconfigure(encoding="utf-8")
+    load_dotenv()  # TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID vem de .env, nunca hardcoded
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()

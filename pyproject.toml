@@ -5,6 +5,7 @@ description = "Bot que coleta vagas de estágio/júnior em SP e alerta no Telegr
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "httpx>=0.28",
+    "python-dotenv>=1.0",
 ]
 
 [dependency-groups]
