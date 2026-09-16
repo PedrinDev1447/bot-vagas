@@ -5,6 +5,7 @@ from src.matcher import rules as rules_module
 from src.matcher.rules import (
     classify_seniority,
     is_blacklisted,
+    is_it_title,
     is_vip,
     matched_stack_terms,
     passes_formacao_filter,
@@ -162,6 +163,56 @@ def test_is_blacklisted_false_by_default():
     """BLACKLIST_COMPANIES comeca vazia (spec 0002) — nenhuma empresa bloqueada."""
     vaga = replace(BASE_VAGA, company="Qualquer Empresa")
     assert is_blacklisted(vaga) is False
+
+
+# --- fix: word boundary no match de VIP/blacklist (spec 0003) ---
+
+
+def test_is_vip_inter_does_not_match_substring_in_interesse():
+    vaga = replace(BASE_VAGA, company="Acme", description="Temos muito interesse no seu perfil.")
+    assert is_vip(vaga) is False
+
+
+def test_is_vip_inter_does_not_match_substring_in_internship():
+    vaga = replace(BASE_VAGA, company="Acme", title="Internship Program")
+    assert is_vip(vaga) is False
+
+
+def test_is_vip_xp_does_not_match_substring_in_experiencia():
+    vaga = replace(BASE_VAGA, company="Acme", description="Buscamos experiencia em atendimento.")
+    assert is_vip(vaga) is False
+
+
+def test_is_vip_inter_still_matches_as_isolated_word():
+    vaga = replace(BASE_VAGA, company="Banco Inter")
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_xp_still_matches_as_isolated_word():
+    vaga = replace(BASE_VAGA, company="XP Investimentos")
+    assert is_vip(vaga) is True
+
+
+# --- filtro de area/cargo no titulo (spec 0003) ---
+
+
+def test_is_it_title_accepts_each_keyword():
+    for keyword in rules_module.IT_TITLE_KEYWORDS:
+        vaga = replace(BASE_VAGA, title=f"Estágio em {keyword.capitalize()}")
+        assert is_it_title(vaga) is True, keyword
+
+
+def test_is_it_title_rejects_title_without_it_terms():
+    """Bug real: vaga 'Estágio | Trabalhista' (Direito) de empresa VIP não
+    pode passar só por ser VIP."""
+    vaga = replace(BASE_VAGA, title="Estágio | Trabalhista")
+    assert is_it_title(vaga) is False
+
+
+def test_is_it_title_ignores_description():
+    """Regra pedida pelo usuário: só o título conta, não a description."""
+    vaga = replace(BASE_VAGA, title="Estágio | Trabalhista", description="Vaga de desenvolvedor")
+    assert is_it_title(vaga) is False
 
 
 # --- filtro de elegibilidade por formacao (spec 0002) ---

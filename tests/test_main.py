@@ -128,10 +128,12 @@ def test_run_skips_blacklisted_company_even_with_stack_match(monkeypatch, tmp_pa
 
 
 def test_run_alerts_vip_company_without_stack_match(monkeypatch, tmp_path):
+    """VIP bypassa so matched_stack_terms — o titulo ainda precisa ser de TI
+    (fix spec 0003)."""
     vaga = make_vaga(
         company="Nubank",
-        title="Estágio Administrativo",
-        description="Vaga de estagio administrativo, sem tech.",
+        title="Estágio em Tecnologia",
+        description="Vaga de estagio, sem termo de stack especifico.",
     )
     _, sent_calls, ats_path = setup_run(monkeypatch, tmp_path, [vaga])
 
@@ -140,6 +142,35 @@ def test_run_alerts_vip_company_without_stack_match(monkeypatch, tmp_path):
     assert len(sent_calls) == 1
     assert "VIP" in sent_calls[0][2]
     assert "sem termo de stack" in Path(ats_path).read_text(encoding="utf-8")
+
+
+def test_run_rejects_vip_company_with_non_it_title(monkeypatch, tmp_path):
+    """Fix spec 0003: empresa VIP tambem contrata fora de TI (RH, juridico) —
+    VIP nunca bypassa a exigencia de titulo de TI."""
+    vaga = make_vaga(company="Itaú", title="Estágio | Trabalhista")
+    _, sent_calls, ats_path = setup_run(monkeypatch, tmp_path, [vaga])
+
+    main_module.run(debug=False)
+
+    assert sent_calls == []
+    assert not Path(ats_path).exists()
+
+
+def test_run_rejects_non_vip_company_matching_via_substring_only(monkeypatch, tmp_path):
+    """Fix spec 0003: "inter"/"xp" nao podem bater como substring dentro de
+    "internship"/"experiencia". Titulo tem termo de TI (passa is_it_title) e
+    nenhum termo real de MINHA_STACK — so a falha do bypass VIP antigo faria
+    essa vaga ser alertada."""
+    vaga = make_vaga(
+        company="Acme",
+        title="Desenvolvedor - Internship Program",
+        description="Precisamos de experiência prévia em atendimento, sem tecnologias específicas.",
+    )
+    _, sent_calls, _ = setup_run(monkeypatch, tmp_path, [vaga])
+
+    main_module.run(debug=False)
+
+    assert sent_calls == []
 
 
 def test_run_skips_vaga_with_formacao_deadline_before_target_year(monkeypatch, tmp_path):

@@ -11,6 +11,7 @@ from src.exporter.markdown import append_ats_entry
 from src.matcher.rules import (
     classify_seniority,
     is_blacklisted,
+    is_it_title,
     is_vip,
     matched_stack_terms,
     passes_formacao_filter,
@@ -61,6 +62,8 @@ def run(debug: bool) -> None:
 
     for vaga in candidates.values():
         if is_blacklisted(vaga):
+            continue
+        if not is_it_title(vaga):
             continue
         if not passes_geo_filter(vaga):
             continue

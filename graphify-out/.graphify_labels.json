@@ -2,9 +2,9 @@
   "0": "Épico: bot de vagas de estágio/jr em SP com alerta no Telegram",
   "1": "Implementation Details",
   "2": "test_matcher.py",
-  "3": "Vaga",
+  "3": "format_message",
   "4": "What You Must Do When Invoked",
-  "5": "insert_vaga",
+  "5": "base.py",
   "6": "test_gupy_scraper.py",
   "7": "run",
   "8": "bot-vagas",
@@ -24,5 +24,9 @@
   "22": "matcher/__init__.py",
   "23": "scraper/__init__.py",
   "24": "storage/__init__.py",
-  "25": "tests/__init__.py"
+  "25": "tests/__init__.py",
+  "26": "VIP/blacklist de empresas, filtro de formação e export Markdown ATS",
+  "27": "append_ats_entry",
+  "28": "vagas_ats.md",
+  "29": "exporter/__init__.py"
 }

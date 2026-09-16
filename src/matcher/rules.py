@@ -104,8 +104,14 @@ def _company_haystack(vaga: Vaga) -> str:
 
 
 def _matches_company_list(vaga: Vaga, companies: list[str]) -> bool:
+    """Word boundary, nao substring puro (fix spec 0003): nome curto de VIP
+    tipo "inter" ou "xp" nao pode bater dentro de "interesse"/"intern" ou
+    "experiencia"."""
     haystack = _company_haystack(vaga)
-    return any(normalize(company) in haystack for company in companies)
+    return any(
+        re.search(rf"\b{re.escape(normalize(company))}\b", haystack) is not None
+        for company in companies
+    )
 
 
 def is_vip(vaga: Vaga) -> bool:
@@ -114,6 +120,31 @@ def is_vip(vaga: Vaga) -> bool:
 
 def is_blacklisted(vaga: Vaga) -> bool:
     return _matches_company_list(vaga, BLACKLIST_COMPANIES)
+
+
+# Fix spec 0003: empresa VIP tambem contrata pra areas fora de TI (RH,
+# juridico, etc.) — o bypass de VIP e so pra matched_stack_terms, nunca pra
+# area/cargo. is_it_title vale pra TODA vaga, inclusive VIP.
+IT_TITLE_KEYWORDS = [
+    "desenvolvedor",
+    "developer",
+    "software",
+    "backend",
+    "frontend",
+    "fullstack",
+    "mobile",
+    "programador",
+    "dados",
+    "ti",
+    "tecnologia",
+]
+
+
+def is_it_title(vaga: Vaga) -> bool:
+    title = normalize(vaga.title)
+    return any(
+        re.search(rf"\b{re.escape(term)}\b", title) is not None for term in IT_TITLE_KEYWORDS
+    )
 
 
 def passes_formacao_filter(vaga: Vaga) -> bool:
