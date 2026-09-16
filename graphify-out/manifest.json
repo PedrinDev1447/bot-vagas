@@ -1,0 +1,67 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1789514543.5825226,
+    "ast_hash": "e61c0a9c8c8ae7364048d4afd7bd1061",
+    "semantic_hash": ""
+  },
+  ".claude/CLAUDE.md": {
+    "mtime": 1789514543.5728135,
+    "ast_hash": "c232166e6492ba1ed955030b16979b05",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/SKILL.md": {
+    "mtime": 1789514543.5728135,
+    "ast_hash": "3c2ff09a22a8e71b100d5c0f95068ae1",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/add-watch.md": {
+    "mtime": 1786070683.860385,
+    "ast_hash": "d59d027fe449f06aa03905a01184e779",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/exports.md": {
+    "mtime": 1786070683.8608973,
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1786070683.8614101,
+    "ast_hash": "42fef56a01698118f7fd722acdadea34",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1786070683.861923,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/hooks.md": {
+    "mtime": 1786070683.8624415,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/query.md": {
+    "mtime": 1786070683.8629591,
+    "ast_hash": "3c46f8ad006874260614ed8657d02307",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/transcribe.md": {
+    "mtime": 1786070683.8639886,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/update.md": {
+    "mtime": 1786070683.8645022,
+    "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1789514810.6343892,
+    "ast_hash": "191f51e11bdf72cb026154460cfa96ad",
+    "semantic_hash": ""
+  },
+  "specs/0001-bot-vagas-estagio-jr-sp.md": {
+    "mtime": 1789588398.253438,
+    "ast_hash": "878057c36a3fb8d39fedc990c0ee1770",
+    "semantic_hash": ""
+  }
+}
