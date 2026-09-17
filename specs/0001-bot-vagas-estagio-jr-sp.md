@@ -305,19 +305,24 @@ nem as issues #2 e #3.
    candidatas apenas vagas com `publishedDate` nas últimas 24h — reduz o
    volume do lote inicial sem tocar no design "um alerta por vaga achada".
 
-### Issues #4-#7 — Novas fontes de coleta (Eureca, Catho, Hipsters.jobs, Handshake)
+### Issues #4-#12 — Novas fontes de coleta
 
-*Registradas no roadmap pela issue #4 (expansão de radar + auditoria, 2026-09-16).
-Cada uma depende só de #1 pela interface `Scraper` e vira sua própria issue de
+*Cada uma depende só de #1 pela interface `Scraper` e vira sua própria issue de
 implementação — nenhum parser entra sem payload real capturado da fonte
-(regra do projeto em `CLAUDE.md`).*
+(regra do projeto em `CLAUDE.md`). Alvos aprovados em 2026-09-16 (registro
+adicional aos quatro já listados antes).*
 
 | # | Fonte | Observação |
 |---|---|---|
-| 4 | Eureca | Formato do feed a confirmar antes do parser |
+| 4 | Eureca | `src/scraper/eureca.py` implementado e testado (`tests/test_eureca.py`, payload real de `/opportunities` capturado em 2026-09-16) — **ainda não plugado no `main.py`** |
 | 5 | Catho | Formato do feed a confirmar antes do parser |
 | 6 | Hipsters.jobs | Formato do feed a confirmar antes do parser |
 | 7 | Handshake | Formato do feed a confirmar antes do parser |
+| 8 | Vagas.com.br | Formato do feed a confirmar antes do parser |
+| 9 | Cia de Talentos | Formato do feed a confirmar antes do parser |
+| 10 | Sólides Vagas | Formato do feed a confirmar antes do parser |
+| 11 | Cia de Estágios | Formato do feed a confirmar antes do parser |
+| 12 | EstágioTrainee | Formato do feed a confirmar antes do parser |
 
 **LinkedIn continua fora do escopo de scraping direto** (reforço do Out of Scope
 abaixo): além de não ter API pública usável, a plataforma bloqueia scraping
@@ -467,7 +472,11 @@ ponderado) — rodam depois, sem bloquear o restante do épico.
 
 - Candidatura automática. Alto risco, quebra termos de uso de ATS, e tira seu
   controle sobre o que sai em seu nome.
-- LinkedIn e Indeed. Bloqueiam scraping ativamente e não têm API pública usável.
+- LinkedIn, Indeed e Glassdoor. Os três ficam fora do escopo de scraping direto
+  (atualizado em 2026-09-16) por proteção anti-bot forte (Cloudflare, CAPTCHA)
+  e/ou IP ban ativo — um coletor confiável exigiria infraestrutura de rotação
+  de IP/proxy e resolução de CAPTCHA, o que viola a restrição de custo zero /
+  sem infra do projeto (D13). Nenhum dos três tem API pública usável.
 - Dashboard ou interface web. O Telegram é a interface.
 - Ranking com LLM ou embeddings. Adiciona custo por chamada e não-determinismo num
   matcher que precisa ser testável. Contraria a restrição de custo zero.
