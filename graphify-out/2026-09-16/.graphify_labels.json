@@ -4,6 +4,7 @@
   "2": "test_matcher.py",
   "3": "test_telegram.py",
   "4": "What You Must Do When Invoked",
+  "5": "Scraper — Eureca",
   "6": "Vaga",
   "7": "run",
   "8": "bot-vagas",
@@ -28,5 +29,7 @@
   "27": "test_eureca.py",
   "28": "vagas_ats.md",
   "29": "exporter/__init__.py",
-  "30": "GupyScraper"
+  "30": "test_gupy_scraper.py",
+  "31": "Client",
+  "32": "[0.2.0.0] - 2026-09-17"
 }

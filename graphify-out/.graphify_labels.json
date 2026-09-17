@@ -2,10 +2,10 @@
   "0": "Épico: bot de vagas de estágio/jr em SP com alerta no Telegram",
   "1": "Fix: falso positivo de substring em VIP/blacklist e VIP sem filtro de área",
   "2": "test_matcher.py",
-  "3": "test_telegram.py",
+  "3": "Vaga",
   "4": "What You Must Do When Invoked",
-  "5": "append_ats_entry",
-  "6": "main.py",
+  "5": "Scraper — Eureca",
+  "6": "base.py",
   "7": "run",
   "8": "bot-vagas",
   "9": "graphify reference: extra exports and benchmark",
@@ -30,5 +30,12 @@
   "28": "vagas_ats.md",
   "29": "exporter/__init__.py",
   "30": "GupyScraper",
-  "31": "Client"
+  "31": "rules.py",
+  "32": "[0.2.0.0] - 2026-09-17",
+  "33": "connect",
+  "34": "is_stack_match",
+  "35": "classify_seniority",
+  "36": "is_it_title",
+  "37": "matched_stack_terms",
+  "38": "passes_geo_filter"
 }

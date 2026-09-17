@@ -1,16 +1,16 @@
 # Graph Report - bot-vagas  (2026-09-16)
 
 ## Corpus Check
-- 44 files · ~25,677 words
+- 46 files · ~27,579 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 351 nodes · 623 edges · 30 communities (23 shown, 7 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.5)
+- 405 nodes · 701 edges · 33 communities (25 shown, 8 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `03b5e297`
+- Built from commit: `5a9bb827`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -20,6 +20,7 @@
 - test_matcher.py
 - test_telegram.py
 - What You Must Do When Invoked
+- Scraper — Eureca
 - Vaga
 - run
 - bot-vagas
@@ -37,19 +38,21 @@
 - VIP/blacklist de empresas, filtro de formação e export Markdown ATS
 - test_eureca.py
 - vagas_ats.md
-- GupyScraper
+- test_gupy_scraper.py
+- Client
+- [0.2.0.0] - 2026-09-17
 
 ## God Nodes (most connected - your core abstractions)
-1. `Vaga` - 44 edges
+1. `Vaga` - 40 edges
 2. `run()` - 34 edges
-3. `is_vip()` - 15 edges
-4. `make_vaga()` - 15 edges
-5. `setup_run()` - 14 edges
-6. `classify_seniority()` - 13 edges
-7. `is_stack_match()` - 13 edges
-8. `passes_formacao_filter()` - 13 edges
-9. `Épico: bot de vagas de estágio/jr em SP com alerta no Telegram` - 13 edges
-10. `matched_stack_terms()` - 12 edges
+3. `parse_eureca_opportunity()` - 24 edges
+4. `fixture_record()` - 18 edges
+5. `is_vip()` - 15 edges
+6. `make_vaga()` - 15 edges
+7. `setup_run()` - 14 edges
+8. `EurecaScraper` - 13 edges
+9. `classify_seniority()` - 13 edges
+10. `is_stack_match()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `test_format_message_includes_essentials()` --calls--> `format_message()`  [EXTRACTED]
@@ -66,7 +69,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (30 total, 7 thin omitted)
+## Communities (33 total, 8 thin omitted)
 
 ### Community 0 - "Épico: bot de vagas de estágio/jr em SP com alerta no Telegram"
 Cohesion: 0.06
@@ -88,9 +91,13 @@ Nodes (10): format_message(), Mensagem enxuta por vaga (D2/D14 completo — scri
 Cohesion: 0.07
 Nodes (26): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+18 more)
 
+### Community 5 - "Scraper — Eureca"
+Cohesion: 0.25
+Nodes (7): Completed, Confirmar se HTML na `description` da Eureca afeta o matcher, Eliminar duplicação de `_normalize()` entre scraper e matcher, Logar quando `_fetch_all` bate no teto de `MAX_PAGES`, Scraper — Eureca, TODOS, Validar shape do payload da API da Eureca antes de indexar
+
 ### Community 6 - "Vaga"
-Cohesion: 0.12
-Nodes (31): ABC, Connection, log_rejection(), datetime, Append-only (mesmo padrao do ATS export, spec 0002) — nunca reescreve o…, append_ats_entry(), Append-only (spec 0002): nunca reescreve o arquivo, pra preservar checkboxes…, collect_candidates() (+23 more)
+Cohesion: 0.10
+Nodes (34): ABC, Connection, log_rejection(), datetime, Append-only (mesmo padrao do ATS export, spec 0002) — nunca reescreve o…, append_ats_entry(), Append-only (spec 0002): nunca reescreve o arquivo, pra preservar checkboxes…, collect_candidates() (+26 more)
 
 ### Community 7 - "run"
 Cohesion: 0.24
@@ -125,32 +132,36 @@ Cohesion: 0.12
 Nodes (15): 1. VIP / Blacklist (`src/matcher/rules.py`), 2. Filtro de formação (`src/matcher/rules.py`), 3. Export Markdown ATS — `src/exporter/markdown.py` (módulo novo), 4. `format_message` (`src/alerter/telegram.py:8`), Acceptance Criteria, Context, Current State, Effort Estimate (+7 more)
 
 ### Community 27 - "test_eureca.py"
-Cohesion: 0.13
-Nodes (24): EurecaScraper, _normalize(), parse_eureca_opportunity(), Client, Lowercase, sem acento — mesma tecnica de matcher/rules.py, duplicada aqui pra…, Mapeia um item de `items[]` da API da Eureca (endpoint /opportunities) para o…, O endpoint /opportunities nao aceita filtro de busca por palavra- chave…, fixture_record() (+16 more)
+Cohesion: 0.05
+Nodes (64): Client, Scraper, EurecaScraper, _normalize(), parse_eureca_opportunity(), O endpoint /opportunities nao aceita filtro de busca por palavra- chave…, Cacheado por instancia: `search()` e chamado uma vez por termo de busca em…, Lowercase, sem acento — mesma tecnica de matcher/rules.py, duplicada aqui pra… (+56 more)
 
-### Community 30 - "GupyScraper"
-Cohesion: 0.17
-Nodes (15): GupyScraper, parse_gupy_job(), Client, Mapeia um item de `data[]` da API da Gupy para o modelo interno. Campos usados…, Dois passes por termo (achado 2 da spec): a API devolve `city`/`state` vazios…, fixture_record(), load_fixture(), Vaga real SP/hibrido, capturada em 2026-09-16 — campos exatamente como a API… (+7 more)
+### Community 30 - "test_gupy_scraper.py"
+Cohesion: 0.26
+Nodes (12): parse_gupy_job(), Mapeia um item de `data[]` da API da Gupy para o modelo interno. Campos usados…, fixture_record(), load_fixture(), Vaga real SP/hibrido, capturada em 2026-09-16 — campos exatamente como a API…, Achado 2 da spec: vaga remota vem com city/state vazios na Gupy., type == vacancy_type_effective (nao-estagio) nao deve virar hint de estagio —…, Passe A (state=SP) pega presencial/hibrido de SP; Passe B (sem state) mantem so… (+4 more)
+
+### Community 32 - "[0.2.0.0] - 2026-09-17"
+Cohesion: 0.40
+Nodes (4): [0.2.0.0] - 2026-09-17, Added, Changed, Changelog
 
 ## Knowledge Gaps
-- **103 isolated node(s):** `bot-vagas`, `vagas`, `graphify`, `Usage`, `What graphify is for` (+98 more)
+- **110 isolated node(s):** `Added`, `Changed`, `Eliminar duplicação de `_normalize()` entre scraper e matcher`, `Validar shape do payload da API da Eureca antes de indexar`, `Logar quando `_fetch_all` bate no teto de `MAX_PAGES`` (+105 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Vaga` connect `Vaga` to `test_matcher.py`, `test_telegram.py`, `run`, `test_eureca.py`, `GupyScraper`?**
-  _High betweenness centrality (0.165) - this node is a cross-community bridge._
-- **Why does `run()` connect `run` to `test_matcher.py`, `test_telegram.py`, `Vaga`, `GupyScraper`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **Why does `parse_eureca_opportunity()` connect `test_eureca.py` to `Vaga`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Are the 2 inferred relationships involving `Vaga` (e.g. with `EurecaScraper` and `GupyScraper`) actually correct?**
-  _`Vaga` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `bot-vagas`, `vagas`, `graphify` to the rest of the system?**
-  _103 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `Vaga` connect `Vaga` to `test_matcher.py`, `test_telegram.py`, `test_gupy_scraper.py`, `run`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Why does `run()` connect `run` to `test_matcher.py`, `test_telegram.py`, `Vaga`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **What connects `Added`, `Changed`, `Eliminar duplicação de `_normalize()` entre scraper e matcher` to the rest of the system?**
+  _110 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Épico: bot de vagas de estágio/jr em SP com alerta no Telegram` be split into smaller, more focused modules?**
   _Cohesion score 0.058823529411764705 - nodes in this community are weakly interconnected._
 - **Should `test_matcher.py` be split into smaller, more focused modules?**
   _Cohesion score 0.050580997949419004 - nodes in this community are weakly interconnected._
+- **Should `What You Must Do When Invoked` be split into smaller, more focused modules?**
+  _Cohesion score 0.07407407407407407 - nodes in this community are weakly interconnected._
+- **Should `Vaga` be split into smaller, more focused modules?**
+  _Cohesion score 0.10083256244218317 - nodes in this community are weakly interconnected._
