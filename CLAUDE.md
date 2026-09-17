@@ -13,6 +13,17 @@ React, React Native, AWS, Python, Node, Terraform, Docker) aprova sozinha com 1
 termo; ADJACENT_STACK (C#, .NET, Angular, Vue, Kubernetes, Azure, GCP, CI/CD,
 Golang) precisa de 2+ termos. Ver `src/matcher/rules.py`.
 
+## Roadmap de fontes
+
+Fontes ativas: Gupy (`src/scraper/gupy.py`, plugada no `main.py`). Scraper
+construído mas ainda não plugado no pipeline: Eureca (`src/scraper/eureca.py`,
+2026-09-16). Próximos alvos aprovados (issues #5-#12, cada um precisa de
+payload/HTML real antes do parser): Catho, Hipsters.jobs, Handshake,
+Vagas.com.br, Cia de Talentos, Sólides Vagas, Cia de Estágios, EstágioTrainee.
+Detalhe e sequenciamento em `specs/0001-bot-vagas-estagio-jr-sp.md` (seção
+"Issues #4-#12 — Novas fontes de coleta"). LinkedIn, Indeed e Glassdoor estão
+fora de escopo — ver "Out of Scope" no mesmo spec.
+
 ## Stack técnica
 
 - **Python** — linguagem principal
