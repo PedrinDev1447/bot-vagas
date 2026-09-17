@@ -4,9 +4,33 @@ from datetime import datetime, timedelta
 
 from src.scraper.base import Vaga
 
-# Perfil de referencia (CLAUDE.md): Java, Spring Boot, React, TypeScript, AWS.
-# Issue #1: lista fixa, sem pesos — score ponderado fica pra issue #Z.
-MINHA_STACK = ["java", "spring boot", "react", "typescript", "aws"]
+# Perfil de referencia (CLAUDE.md, issue #4): CORE_STACK aprova sozinha (1
+# termo basta); ADJACENT_STACK precisa de 2+ termos pra aprovar. Substitui a
+# antiga MINHA_STACK (issue #1) — sem pesos, sem YAML, score ponderado
+# continua sendo a #Z.
+CORE_STACK = [
+    "java",
+    "spring",
+    "typescript",
+    "react",
+    "react native",
+    "aws",
+    "python",
+    "node",
+    "terraform",
+    "docker",
+]
+ADJACENT_STACK = [
+    "c#",
+    ".net",
+    "angular",
+    "vue",
+    "kubernetes",
+    "azure",
+    "gcp",
+    "ci/cd",
+    "golang",
+]
 
 # Empresas que sempre alertam, mesmo sem termo de MINHA_STACK no texto (bypassa
 # is_stack_match — spec 0002). Sem YAML ainda, mesmo estilo enxuto de MINHA_STACK.
@@ -85,15 +109,29 @@ def classify_seniority(vaga: Vaga) -> str | None:
     return None
 
 
-def matched_stack_terms(vaga: Vaga) -> list[str]:
-    """Matching simples da issue #1: quais termos de MINHA_STACK aparecem em
-    titulo + descricao. Sem peso, sem threshold — score ponderado e a #Z."""
+def matched_core_terms(vaga: Vaga) -> list[str]:
+    """Matching simples (mesmo mecanismo da antiga matched_stack_terms):
+    quais termos de CORE_STACK aparecem em titulo + descricao."""
     haystack = normalize(f"{vaga.title}\n{vaga.description}")
-    return [term for term in MINHA_STACK if normalize(term) in haystack]
+    return [term for term in CORE_STACK if normalize(term) in haystack]
+
+
+def matched_adjacent_terms(vaga: Vaga) -> list[str]:
+    haystack = normalize(f"{vaga.title}\n{vaga.description}")
+    return [term for term in ADJACENT_STACK if normalize(term) in haystack]
+
+
+def matched_stack_terms(vaga: Vaga) -> list[str]:
+    """Lista combinada (issue #4) pra exibicao na mensagem do Telegram e no
+    export ATS — sem rotulo Core/Adjacent, mensagem enxuta. Nao decide
+    aprovacao sozinha, ver is_stack_match."""
+    return matched_core_terms(vaga) + matched_adjacent_terms(vaga)
 
 
 def is_stack_match(vaga: Vaga) -> bool:
-    return len(matched_stack_terms(vaga)) >= 1
+    """Aprova com >=1 termo de CORE_STACK OU >=2 termos de ADJACENT_STACK
+    (issue #4)."""
+    return len(matched_core_terms(vaga)) >= 1 or len(matched_adjacent_terms(vaga)) >= 2
 
 
 def _company_haystack(vaga: Vaga) -> str:
@@ -137,6 +175,9 @@ IT_TITLE_KEYWORDS = [
     "dados",
     "ti",
     "tecnologia",
+    "devops",
+    "infraestrutura",
+    "cloud",
 ]
 
 

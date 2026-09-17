@@ -6,7 +6,10 @@ from src.matcher.rules import (
     classify_seniority,
     is_blacklisted,
     is_it_title,
+    is_stack_match,
     is_vip,
+    matched_adjacent_terms,
+    matched_core_terms,
     matched_stack_terms,
     passes_formacao_filter,
     passes_geo_filter,
@@ -82,17 +85,19 @@ def test_seniority_no_match_is_rejected():
     assert classify_seniority(vaga) is None
 
 
-# --- matching de stack (issue #1: contagem simples, sem peso) ---
+# --- matching de stack: lista combinada pra exibicao (issue #1) ---
 
 
 def test_matching_counts_multiple_stack_terms():
+    """ "spring boot" da MINHA_STACK (issue #1) virou "spring" em CORE_STACK
+    (issue #4) — ainda bate por substring dentro de "Spring Boot"."""
     vaga = replace(
         BASE_VAGA,
         title="Desenvolvedor Java Junior",
         description="Java, Spring Boot, React e AWS. TypeScript e um diferencial.",
     )
     terms = matched_stack_terms(vaga)
-    assert set(terms) == {"java", "spring boot", "react", "typescript", "aws"}
+    assert set(terms) == {"java", "spring", "react", "typescript", "aws"}
 
 
 def test_matching_single_term_still_counts():
@@ -103,6 +108,48 @@ def test_matching_single_term_still_counts():
 def test_matching_no_terms_returns_empty():
     vaga = replace(BASE_VAGA, title="Estagio Administrativo", description="Excel e organizacao.")
     assert matched_stack_terms(vaga) == []
+
+
+# --- match Core vs Adjacent (issue #4) ---
+
+
+def test_stack_match_true_with_single_core_term():
+    vaga = replace(BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Docker.")
+    assert matched_core_terms(vaga) == ["docker"]
+    assert is_stack_match(vaga) is True
+
+
+def test_stack_match_false_with_single_adjacent_term():
+    vaga = replace(BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Angular.")
+    assert matched_adjacent_terms(vaga) == ["angular"]
+    assert is_stack_match(vaga) is False
+
+
+def test_stack_match_true_with_two_adjacent_terms():
+    vaga = replace(
+        BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Angular e Kubernetes."
+    )
+    assert matched_adjacent_terms(vaga) == ["angular", "kubernetes"]
+    assert is_stack_match(vaga) is True
+
+
+def test_stack_match_true_with_core_and_one_adjacent():
+    vaga = replace(
+        BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Python e Angular."
+    )
+    assert is_stack_match(vaga) is True
+
+
+def test_stack_match_false_with_no_terms():
+    vaga = replace(BASE_VAGA, title="Estagio Administrativo", description="Excel e organizacao.")
+    assert is_stack_match(vaga) is False
+
+
+def test_matched_stack_terms_combines_core_and_adjacent():
+    vaga = replace(
+        BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Python e Angular."
+    )
+    assert matched_stack_terms(vaga) == ["python", "angular"]
 
 
 # --- backfill do primeiro run (issue #1, ponto 6) ---
@@ -200,6 +247,21 @@ def test_is_it_title_accepts_each_keyword():
     for keyword in rules_module.IT_TITLE_KEYWORDS:
         vaga = replace(BASE_VAGA, title=f"Estágio em {keyword.capitalize()}")
         assert is_it_title(vaga) is True, keyword
+
+
+def test_is_it_title_accepts_expanded_titles_issue_4():
+    """Issue #4: devops/infraestrutura/cloud sao termos novos; dados/ti/
+    tecnologia/software ja cobriam engenharia de software e TI antes."""
+    titles = [
+        "Estágio em DevOps",
+        "Analista de Infraestrutura Jr",
+        "Estagiário de Cloud",
+        "Estágio em Engenharia de Software",
+        "Assistente de Tecnologia da Informação",
+    ]
+    for title in titles:
+        vaga = replace(BASE_VAGA, title=title)
+        assert is_it_title(vaga) is True, title
 
 
 def test_is_it_title_rejects_title_without_it_terms():
