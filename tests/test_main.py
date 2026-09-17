@@ -1,9 +1,18 @@
 from dataclasses import replace
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
 import src.main as main_module
+from src.exporter.audit import (
+    REASON_BLACKLIST,
+    REASON_FORMACAO,
+    REASON_GEO,
+    REASON_NOT_IT_TITLE,
+    REASON_SENIORITY,
+    REASON_STACK,
+)
 from src.scraper.base import Vaga
 from src.storage.db import connect
 
@@ -29,7 +38,11 @@ def make_vaga(**overrides) -> Vaga:
 
 def setup_run(monkeypatch, tmp_path, vagas, debug=False, with_token=True):
     db_path = str(tmp_path / "vagas.db")
+    ats_path = str(tmp_path / "vagas_ats.md")
+    audit_path = str(tmp_path / "auditoria_rejeitadas.log")
     monkeypatch.setattr(main_module, "DB_PATH", db_path)
+    monkeypatch.setattr(main_module, "ATS_EXPORT_PATH", ats_path)
+    monkeypatch.setattr(main_module, "AUDIT_LOG_PATH", audit_path)
     monkeypatch.setattr(main_module.GupyScraper, "search", lambda self, term: list(vagas))
     monkeypatch.setattr(main_module.time, "sleep", lambda s: None)
     monkeypatch.setattr(
@@ -48,11 +61,16 @@ def setup_run(monkeypatch, tmp_path, vagas, debug=False, with_token=True):
         "send_message",
         lambda token, chat_id, text: sent_calls.append((token, chat_id, text)),
     )
-    return db_path, sent_calls
+    return db_path, sent_calls, ats_path, audit_path
+
+
+def read_audit_log(audit_path: str) -> str:
+    path = Path(audit_path)
+    return path.read_text(encoding="utf-8") if path.exists() else ""
 
 
 def test_run_sends_new_matching_vaga_and_marks_alerted(monkeypatch, tmp_path):
-    db_path, sent_calls = setup_run(monkeypatch, tmp_path, [make_vaga()])
+    db_path, sent_calls, ats_path, audit_path = setup_run(monkeypatch, tmp_path, [make_vaga()])
 
     main_module.run(debug=False)
 
@@ -65,10 +83,13 @@ def test_run_sends_new_matching_vaga_and_marks_alerted(monkeypatch, tmp_path):
     row = conn.execute("SELECT alerted_at FROM vagas WHERE external_id = ?", ("1",)).fetchone()
     assert row["alerted_at"] is not None
 
+    assert "Desenvolvedor Java Junior" in Path(ats_path).read_text(encoding="utf-8")
+    assert read_audit_log(audit_path) == ""
+
 
 def test_run_twice_does_not_resend_same_vaga(monkeypatch, tmp_path):
     """Idempotencia: dedupe por (source, external_id) impede reenvio."""
-    db_path, sent_calls = setup_run(monkeypatch, tmp_path, [make_vaga()])
+    db_path, sent_calls, _, _ = setup_run(monkeypatch, tmp_path, [make_vaga()])
 
     main_module.run(debug=False)
     main_module.run(debug=False)
@@ -77,13 +98,14 @@ def test_run_twice_does_not_resend_same_vaga(monkeypatch, tmp_path):
 
 
 def test_run_debug_mode_does_not_call_telegram(monkeypatch, tmp_path, capsys):
-    _, sent_calls = setup_run(monkeypatch, tmp_path, [make_vaga()], with_token=False)
+    _, sent_calls, ats_path, _ = setup_run(monkeypatch, tmp_path, [make_vaga()], with_token=False)
 
     main_module.run(debug=True)
 
     assert sent_calls == []
     out = capsys.readouterr().out
     assert "Desenvolvedor Java Junior" in out
+    assert not Path(ats_path).exists()
 
 
 def test_run_without_token_outside_debug_raises(monkeypatch, tmp_path):
@@ -95,26 +117,123 @@ def test_run_without_token_outside_debug_raises(monkeypatch, tmp_path):
 
 def test_run_skips_vaga_outside_geo_filter(monkeypatch, tmp_path):
     vaga = make_vaga(city="Juiz de Fora", state="Minas Gerais", workplace_type="on-site")
-    _, sent_calls = setup_run(monkeypatch, tmp_path, [vaga])
+    _, sent_calls, _, audit_path = setup_run(monkeypatch, tmp_path, [vaga])
 
     main_module.run(debug=False)
 
     assert sent_calls == []
+    assert f"Motivo: {REASON_GEO}" in read_audit_log(audit_path)
 
 
 def test_run_skips_vaga_outside_backfill_window(monkeypatch, tmp_path):
     vaga = make_vaga(published_at="2026-08-05T15:15:04.818Z")  # semanas antes de NOW
-    _, sent_calls = setup_run(monkeypatch, tmp_path, [vaga])
+    _, sent_calls, _, audit_path = setup_run(monkeypatch, tmp_path, [vaga])
 
     main_module.run(debug=False)
 
     assert sent_calls == []
+    assert read_audit_log(audit_path) == ""
+
+
+def test_run_skips_blacklisted_company_even_with_stack_match(monkeypatch, tmp_path):
+    monkeypatch.setattr(main_module, "is_blacklisted", lambda vaga: True)
+    _, sent_calls, ats_path, audit_path = setup_run(monkeypatch, tmp_path, [make_vaga()])
+
+    main_module.run(debug=False)
+
+    assert sent_calls == []
+    assert not Path(ats_path).exists()
+    assert f"Motivo: {REASON_BLACKLIST}" in read_audit_log(audit_path)
+
+
+def test_run_alerts_vip_company_without_stack_match(monkeypatch, tmp_path):
+    """VIP bypassa so matched_stack_terms — o titulo ainda precisa ser de TI
+    (fix spec 0003)."""
+    vaga = make_vaga(
+        company="Nubank",
+        title="Estágio em Tecnologia",
+        description="Vaga de estagio, sem termo de stack especifico.",
+    )
+    _, sent_calls, ats_path, audit_path = setup_run(monkeypatch, tmp_path, [vaga])
+
+    main_module.run(debug=False)
+
+    assert len(sent_calls) == 1
+    assert "VIP" in sent_calls[0][2]
+    assert "sem termo de stack" in Path(ats_path).read_text(encoding="utf-8")
+    assert read_audit_log(audit_path) == ""
+
+
+def test_run_rejects_vip_company_with_non_it_title(monkeypatch, tmp_path):
+    """Fix spec 0003: empresa VIP tambem contrata fora de TI (RH, juridico) —
+    VIP nunca bypassa a exigencia de titulo de TI."""
+    vaga = make_vaga(company="Itaú", title="Estágio | Trabalhista")
+    _, sent_calls, ats_path, audit_path = setup_run(monkeypatch, tmp_path, [vaga])
+
+    main_module.run(debug=False)
+
+    assert sent_calls == []
+    assert not Path(ats_path).exists()
+    assert f"Motivo: {REASON_NOT_IT_TITLE}" in read_audit_log(audit_path)
+
+
+def test_run_rejects_non_vip_company_matching_via_substring_only(monkeypatch, tmp_path):
+    """Fix spec 0003: "inter"/"xp" nao podem bater como substring dentro de
+    "internship"/"experiencia". Titulo tem termo de TI (passa is_it_title) e
+    nenhum termo real de CORE_STACK/ADJACENT_STACK — so a falha do bypass VIP
+    antigo faria essa vaga ser alertada."""
+    vaga = make_vaga(
+        company="Acme",
+        title="Desenvolvedor - Internship Program",
+        description="Precisamos de experiência prévia em atendimento, sem tecnologias específicas.",
+    )
+    _, sent_calls, _, audit_path = setup_run(monkeypatch, tmp_path, [vaga])
+
+    main_module.run(debug=False)
+
+    assert sent_calls == []
+    assert f"Motivo: {REASON_STACK}" in read_audit_log(audit_path)
+
+
+def test_run_skips_vaga_with_formacao_deadline_before_target_year(monkeypatch, tmp_path):
+    vaga = make_vaga(description="Java e Spring Boot. Formatura até dez/2026.")
+    _, sent_calls, _, audit_path = setup_run(monkeypatch, tmp_path, [vaga])
+
+    main_module.run(debug=False)
+
+    assert sent_calls == []
+    assert f"Motivo: {REASON_FORMACAO}" in read_audit_log(audit_path)
+
+
+def test_run_skips_vaga_with_seniority_outside_profile(monkeypatch, tmp_path):
+    """Categoria de auditoria 'senioridade' (issue #4): titulo sem termo de
+    entrada (estagio/junior/trainee) e sem hint de fonte."""
+    vaga = make_vaga(title="Desenvolvedor Java Pleno")
+    _, sent_calls, _, audit_path = setup_run(monkeypatch, tmp_path, [vaga])
+
+    main_module.run(debug=False)
+
+    assert sent_calls == []
+    assert f"Motivo: {REASON_SENIORITY}" in read_audit_log(audit_path)
+
+
+def test_run_audit_log_runs_in_debug_mode(monkeypatch, tmp_path):
+    """Issue #4: log de auditoria roda sempre, inclusive em --debug (ao
+    contrario do export ATS, que e pulado em --debug)."""
+    vaga = make_vaga(city="Juiz de Fora", state="Minas Gerais", workplace_type="on-site")
+    _, sent_calls, _, audit_path = setup_run(monkeypatch, tmp_path, [vaga], with_token=False)
+
+    main_module.run(debug=True)
+
+    assert sent_calls == []
+    assert f"Motivo: {REASON_GEO}" in read_audit_log(audit_path)
 
 
 def test_run_rate_limits_between_real_sends(monkeypatch, tmp_path):
     vagas = [make_vaga(external_id="1"), make_vaga(external_id="2", url="https://example.com/2")]
     db_path = str(tmp_path / "vagas.db")
     monkeypatch.setattr(main_module, "DB_PATH", db_path)
+    monkeypatch.setattr(main_module, "ATS_EXPORT_PATH", str(tmp_path / "vagas_ats.md"))
     monkeypatch.setattr(main_module.GupyScraper, "search", lambda self, term: list(vagas))
     monkeypatch.setattr(
         main_module, "datetime", type("_FixedDatetime", (), {"now": staticmethod(lambda tz: NOW)})

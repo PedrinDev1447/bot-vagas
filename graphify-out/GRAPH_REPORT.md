@@ -1,27 +1,27 @@
 # Graph Report - bot-vagas  (2026-09-16)
 
 ## Corpus Check
-- 33 files · ~19,234 words
+- 41 files · ~23,889 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 211 nodes · 340 edges · 26 communities (20 shown, 6 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.68)
+- 321 nodes · 561 edges · 29 communities (22 shown, 7 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a06973db`
+- Built from commit: `2ede567d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Épico: bot de vagas de estágio/jr em SP com alerta no Telegram
-- Implementation Details
+- Fix: falso positivo de substring em VIP/blacklist e VIP sem filtro de área
 - test_matcher.py
-- Vaga
+- main.py
 - What You Must Do When Invoked
-- insert_vaga
-- test_gupy_scraper.py
+- test_storage.py
+- Vaga
 - run
 - bot-vagas
 - graphify reference: extra exports and benchmark
@@ -35,21 +35,25 @@
 - extraction-spec.md
 - schema.sql
 - bot-vagas
+- VIP/blacklist de empresas, filtro de formação e export Markdown ATS
+- vagas_ats.md
 
 ## God Nodes (most connected - your core abstractions)
-1. `Vaga` - 25 edges
-2. `run()` - 21 edges
-3. `classify_seniority()` - 13 edges
-4. `Épico: bot de vagas de estágio/jr em SP com alerta no Telegram` - 13 edges
-5. `What You Must Do When Invoked` - 12 edges
-6. `matched_stack_terms()` - 11 edges
-7. `GupyScraper` - 11 edges
-8. `connect()` - 11 edges
-9. `insert_vaga()` - 11 edges
-10. `/graphify` - 11 edges
+1. `Vaga` - 40 edges
+2. `run()` - 34 edges
+3. `is_vip()` - 15 edges
+4. `make_vaga()` - 15 edges
+5. `setup_run()` - 14 edges
+6. `classify_seniority()` - 13 edges
+7. `is_stack_match()` - 13 edges
+8. `passes_formacao_filter()` - 13 edges
+9. `Épico: bot de vagas de estágio/jr em SP com alerta no Telegram` - 13 edges
+10. `matched_stack_terms()` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `test_format_message_includes_essentials()` --calls--> `format_message()`  [EXTRACTED]
+  tests/test_telegram.py → src/alerter/telegram.py
+- `test_format_message_non_vip_unaffected_by_new_param()` --calls--> `format_message()`  [EXTRACTED]
   tests/test_telegram.py → src/alerter/telegram.py
 - `test_format_message_remote_job_shows_remoto_label()` --calls--> `format_message()`  [EXTRACTED]
   tests/test_telegram.py → src/alerter/telegram.py
@@ -57,45 +61,43 @@
   tests/test_telegram.py → src/alerter/telegram.py
 - `test_send_message_propagates_http_errors()` --calls--> `send_message()`  [EXTRACTED]
   tests/test_telegram.py → src/alerter/telegram.py
-- `test_geo_filter_accepts_sp_capital_hybrid()` --calls--> `passes_geo_filter()`  [EXTRACTED]
-  tests/test_matcher.py → src/matcher/rules.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (26 total, 6 thin omitted)
+## Communities (29 total, 7 thin omitted)
 
 ### Community 0 - "Épico: bot de vagas de estágio/jr em SP com alerta no Telegram"
-Cohesion: 0.09
-Nodes (21): Acceptance Criteria, Adzuna — parcialmente confirmado, Child Issues, Context, Current State, Dependency Graph, Effort Estimate, Evidência coletada das fontes (2026-09-15) (+13 more)
+Cohesion: 0.06
+Nodes (33): Acceptance Criteria, Adzuna — parcialmente confirmado, Child Issues, Coleta na Gupy (dois passes por termo), Context, Current State, Decisões travadas, Dependency Graph (+25 more)
 
-### Community 1 - "Implementation Details"
-Cohesion: 0.18
-Nodes (11): Coleta na Gupy (dois passes por termo), Decisões travadas, Filtro de senioridade (D4), Filtro geográfico (D3), Implementation Details, Mensagem do Telegram (D2 + D14), Proposed Change, Regra de dedupe (D10) (+3 more)
+### Community 1 - "Fix: falso positivo de substring em VIP/blacklist e VIP sem filtro de área"
+Cohesion: 0.17
+Nodes (11): 1. `_matches_company_list` com word boundary, 2. `is_it_title` — novo filtro de área, obrigatório pra todas as vagas, 3. Pipeline em `main.py`, Acceptance Criteria, Context, Current State, Files Reference, Fix: falso positivo de substring em VIP/blacklist e VIP sem filtro de área (+3 more)
 
 ### Community 2 - "test_matcher.py"
-Cohesion: 0.12
-Nodes (29): datetime, classify_seniority(), is_stack_match(), matched_stack_terms(), normalize(), passes_geo_filter(), Lowercase, sem acento, espacos nas pontas — base de comparacao pro filtro…, D3: SP capital (presencial/hibrido) + remoto Brasil. Vaga remota vem com… (+21 more)
+Cohesion: 0.05
+Nodes (75): classify_seniority(), _company_haystack(), is_blacklisted(), is_it_title(), is_stack_match(), is_vip(), matched_adjacent_terms(), matched_core_terms() (+67 more)
 
-### Community 3 - "Vaga"
-Cohesion: 0.17
-Nodes (16): ABC, Client, format_message(), Mensagem enxuta por vaga (D2/D14 completo — script de apresentacao pronto pra…, send_message(), collect_candidates(), Busca todos os termos e funde por external_id — a mesma vaga pode aparecer sob…, Busca vagas para um termo, já aplicando o filtro geográfico da fonte. (+8 more)
+### Community 3 - "main.py"
+Cohesion: 0.25
+Nodes (11): format_message(), Mensagem enxuta por vaga (D2/D14 completo — script de apresentacao pronto pra…, send_message(), main(), Vaga alertada so por bypass de empresa VIP (spec 0002) nao pode deixar "Match:…, test_format_message_empty_terms_with_vip_explains_bypass(), test_format_message_includes_essentials(), test_format_message_non_vip_unaffected_by_new_param() (+3 more)
 
 ### Community 4 - "What You Must Do When Invoked"
 Cohesion: 0.07
 Nodes (26): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+18 more)
 
-### Community 5 - "insert_vaga"
+### Community 5 - "test_storage.py"
 Cohesion: 0.34
 Nodes (12): Connection, connect(), insert_vaga(), mark_alerted(), Insere a vaga se for nova. Retorna True se inseriu, False se já existia (mesma…, make_vaga(), Regra de dedupe da issue #1: UNIQUE(source, external_id) apenas., Issue #1 nao tem hash canonico ainda (issue #X) — dedupe e so por (source,… (+4 more)
 
-### Community 6 - "test_gupy_scraper.py"
-Cohesion: 0.26
-Nodes (12): parse_gupy_job(), Mapeia um item de `data[]` da API da Gupy para o modelo interno. Campos usados…, fixture_record(), load_fixture(), Vaga real SP/hibrido, capturada em 2026-09-16 — campos exatamente como a API…, Achado 2 da spec: vaga remota vem com city/state vazios na Gupy., type == vacancy_type_effective (nao-estagio) nao deve virar hint de estagio —…, Passe A (state=SP) pega presencial/hibrido de SP; Passe B (sem state) mantem so… (+4 more)
+### Community 6 - "Vaga"
+Cohesion: 0.09
+Nodes (33): ABC, Client, log_rejection(), datetime, Append-only (mesmo padrao do ATS export, spec 0002) — nunca reescreve o…, append_ats_entry(), Append-only (spec 0002): nunca reescreve o arquivo, pra preservar checkboxes…, collect_candidates() (+25 more)
 
 ### Community 7 - "run"
-Cohesion: 0.38
-Nodes (12): main(), run(), make_vaga(), Idempotencia: dedupe por (source, external_id) impede reenvio., setup_run(), test_run_debug_mode_does_not_call_telegram(), test_run_rate_limits_between_real_sends(), test_run_sends_new_matching_vaga_and_marks_alerted() (+4 more)
+Cohesion: 0.24
+Nodes (24): run(), make_vaga(), VIP bypassa so matched_stack_terms — o titulo ainda precisa ser de TI (fix spec…, Fix spec 0003: empresa VIP tambem contrata fora de TI (RH, juridico) — VIP…, Fix spec 0003: "inter"/"xp" nao podem bater como substring dentro de…, Categoria de auditoria 'senioridade' (issue #4): titulo sem termo de entrada…, Issue #4: log de auditoria roda sempre, inclusive em --debug (ao contrario do…, Idempotencia: dedupe por (source, external_id) impede reenvio. (+16 more)
 
 ### Community 8 - "bot-vagas"
 Cohesion: 0.22
@@ -121,25 +123,29 @@ Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify refer
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
+### Community 26 - "VIP/blacklist de empresas, filtro de formação e export Markdown ATS"
+Cohesion: 0.12
+Nodes (15): 1. VIP / Blacklist (`src/matcher/rules.py`), 2. Filtro de formação (`src/matcher/rules.py`), 3. Export Markdown ATS — `src/exporter/markdown.py` (módulo novo), 4. `format_message` (`src/alerter/telegram.py:8`), Acceptance Criteria, Context, Current State, Effort Estimate (+7 more)
+
 ## Knowledge Gaps
-- **79 isolated node(s):** `bot-vagas`, `vagas`, `graphify`, `Usage`, `What graphify is for` (+74 more)
+- **102 isolated node(s):** `bot-vagas`, `vagas`, `graphify`, `Usage`, `What graphify is for` (+97 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Vaga` connect `Vaga` to `test_matcher.py`, `insert_vaga`, `test_gupy_scraper.py`, `run`?**
-  _High betweenness centrality (0.075) - this node is a cross-community bridge._
-- **Why does `run()` connect `run` to `test_matcher.py`, `Vaga`, `insert_vaga`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Why does `GupyScraper` connect `Vaga` to `test_gupy_scraper.py`, `run`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `Vaga` connect `Vaga` to `test_matcher.py`, `main.py`, `test_storage.py`, `run`?**
+  _High betweenness centrality (0.104) - this node is a cross-community bridge._
+- **Why does `run()` connect `run` to `test_matcher.py`, `main.py`, `test_storage.py`, `Vaga`?**
+  _High betweenness centrality (0.068) - this node is a cross-community bridge._
 - **What connects `bot-vagas`, `vagas`, `graphify` to the rest of the system?**
-  _79 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _102 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Épico: bot de vagas de estágio/jr em SP com alerta no Telegram` be split into smaller, more focused modules?**
-  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.058823529411764705 - nodes in this community are weakly interconnected._
 - **Should `test_matcher.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.12473118279569892 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.050580997949419004 - nodes in this community are weakly interconnected._
 - **Should `What You Must Do When Invoked` be split into smaller, more focused modules?**
   _Cohesion score 0.07407407407407407 - nodes in this community are weakly interconnected._
+- **Should `Vaga` be split into smaller, more focused modules?**
+  _Cohesion score 0.08879492600422834 - nodes in this community are weakly interconnected._

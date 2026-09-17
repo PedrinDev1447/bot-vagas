@@ -1,9 +1,17 @@
 from dataclasses import replace
 from datetime import UTC, datetime
 
+from src.matcher import rules as rules_module
 from src.matcher.rules import (
     classify_seniority,
+    is_blacklisted,
+    is_it_title,
+    is_stack_match,
+    is_vip,
+    matched_adjacent_terms,
+    matched_core_terms,
     matched_stack_terms,
+    passes_formacao_filter,
     passes_geo_filter,
     within_backfill_window,
 )
@@ -77,17 +85,19 @@ def test_seniority_no_match_is_rejected():
     assert classify_seniority(vaga) is None
 
 
-# --- matching de stack (issue #1: contagem simples, sem peso) ---
+# --- matching de stack: lista combinada pra exibicao (issue #1) ---
 
 
 def test_matching_counts_multiple_stack_terms():
+    """ "spring boot" da MINHA_STACK (issue #1) virou "spring" em CORE_STACK
+    (issue #4) — ainda bate por substring dentro de "Spring Boot"."""
     vaga = replace(
         BASE_VAGA,
         title="Desenvolvedor Java Junior",
         description="Java, Spring Boot, React e AWS. TypeScript e um diferencial.",
     )
     terms = matched_stack_terms(vaga)
-    assert set(terms) == {"java", "spring boot", "react", "typescript", "aws"}
+    assert set(terms) == {"java", "spring", "react", "typescript", "aws"}
 
 
 def test_matching_single_term_still_counts():
@@ -98,6 +108,48 @@ def test_matching_single_term_still_counts():
 def test_matching_no_terms_returns_empty():
     vaga = replace(BASE_VAGA, title="Estagio Administrativo", description="Excel e organizacao.")
     assert matched_stack_terms(vaga) == []
+
+
+# --- match Core vs Adjacent (issue #4) ---
+
+
+def test_stack_match_true_with_single_core_term():
+    vaga = replace(BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Docker.")
+    assert matched_core_terms(vaga) == ["docker"]
+    assert is_stack_match(vaga) is True
+
+
+def test_stack_match_false_with_single_adjacent_term():
+    vaga = replace(BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Angular.")
+    assert matched_adjacent_terms(vaga) == ["angular"]
+    assert is_stack_match(vaga) is False
+
+
+def test_stack_match_true_with_two_adjacent_terms():
+    vaga = replace(
+        BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Angular e Kubernetes."
+    )
+    assert matched_adjacent_terms(vaga) == ["angular", "kubernetes"]
+    assert is_stack_match(vaga) is True
+
+
+def test_stack_match_true_with_core_and_one_adjacent():
+    vaga = replace(
+        BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Python e Angular."
+    )
+    assert is_stack_match(vaga) is True
+
+
+def test_stack_match_false_with_no_terms():
+    vaga = replace(BASE_VAGA, title="Estagio Administrativo", description="Excel e organizacao.")
+    assert is_stack_match(vaga) is False
+
+
+def test_matched_stack_terms_combines_core_and_adjacent():
+    vaga = replace(
+        BASE_VAGA, title="Estagio", description="Buscamos conhecimento em Python e Angular."
+    )
+    assert matched_stack_terms(vaga) == ["python", "angular"]
 
 
 # --- backfill do primeiro run (issue #1, ponto 6) ---
@@ -119,3 +171,153 @@ def test_backfill_rejects_missing_published_date():
     reference_now = datetime(2026, 9, 16, 20, 0, 0, tzinfo=UTC)
     vaga = replace(BASE_VAGA, published_at=None)
     assert within_backfill_window(vaga, reference_now) is False
+
+
+# --- VIP / blacklist de empresas (spec 0002) ---
+
+
+def test_is_vip_matches_company_field_case_and_accent_insensitive():
+    vaga = replace(BASE_VAGA, company="Nubank")
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_matches_via_title_when_company_is_stylized():
+    """Mitigacao de slogan de carreira estilizado (ex.: Gupy #SANGUELARANJA):
+    o termo VIP pode bater no titulo mesmo quando company nao ajuda."""
+    vaga = replace(BASE_VAGA, company="#SANGUELARANJA", title="Estagiario Itau de Tecnologia")
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_matches_via_description_first_500_chars():
+    vaga = replace(
+        BASE_VAGA, company="Globalweb", title="Estagio", description="Vem trabalhar na Stone!"
+    )
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_false_when_no_match():
+    vaga = replace(BASE_VAGA, company="Acme")
+    assert is_vip(vaga) is False
+
+
+def test_is_blacklisted_true_when_company_in_list(monkeypatch):
+    monkeypatch.setattr(rules_module, "BLACKLIST_COMPANIES", ["acme"])
+    vaga = replace(BASE_VAGA, company="Acme")
+    assert is_blacklisted(vaga) is True
+
+
+def test_is_blacklisted_false_by_default():
+    """BLACKLIST_COMPANIES comeca vazia (spec 0002) — nenhuma empresa bloqueada."""
+    vaga = replace(BASE_VAGA, company="Qualquer Empresa")
+    assert is_blacklisted(vaga) is False
+
+
+# --- fix: word boundary no match de VIP/blacklist (spec 0003) ---
+
+
+def test_is_vip_inter_does_not_match_substring_in_interesse():
+    vaga = replace(BASE_VAGA, company="Acme", description="Temos muito interesse no seu perfil.")
+    assert is_vip(vaga) is False
+
+
+def test_is_vip_inter_does_not_match_substring_in_internship():
+    vaga = replace(BASE_VAGA, company="Acme", title="Internship Program")
+    assert is_vip(vaga) is False
+
+
+def test_is_vip_xp_does_not_match_substring_in_experiencia():
+    vaga = replace(BASE_VAGA, company="Acme", description="Buscamos experiencia em atendimento.")
+    assert is_vip(vaga) is False
+
+
+def test_is_vip_inter_still_matches_as_isolated_word():
+    vaga = replace(BASE_VAGA, company="Banco Inter")
+    assert is_vip(vaga) is True
+
+
+def test_is_vip_xp_still_matches_as_isolated_word():
+    vaga = replace(BASE_VAGA, company="XP Investimentos")
+    assert is_vip(vaga) is True
+
+
+# --- filtro de area/cargo no titulo (spec 0003) ---
+
+
+def test_is_it_title_accepts_each_keyword():
+    for keyword in rules_module.IT_TITLE_KEYWORDS:
+        vaga = replace(BASE_VAGA, title=f"Estágio em {keyword.capitalize()}")
+        assert is_it_title(vaga) is True, keyword
+
+
+def test_is_it_title_accepts_expanded_titles_issue_4():
+    """Issue #4: devops/infraestrutura/cloud sao termos novos; dados/ti/
+    tecnologia/software ja cobriam engenharia de software e TI antes."""
+    titles = [
+        "Estágio em DevOps",
+        "Analista de Infraestrutura Jr",
+        "Estagiário de Cloud",
+        "Estágio em Engenharia de Software",
+        "Assistente de Tecnologia da Informação",
+    ]
+    for title in titles:
+        vaga = replace(BASE_VAGA, title=title)
+        assert is_it_title(vaga) is True, title
+
+
+def test_is_it_title_rejects_title_without_it_terms():
+    """Bug real: vaga 'Estágio | Trabalhista' (Direito) de empresa VIP não
+    pode passar só por ser VIP."""
+    vaga = replace(BASE_VAGA, title="Estágio | Trabalhista")
+    assert is_it_title(vaga) is False
+
+
+def test_is_it_title_ignores_description():
+    """Regra pedida pelo usuário: só o título conta, não a description."""
+    vaga = replace(BASE_VAGA, title="Estágio | Trabalhista", description="Vaga de desenvolvedor")
+    assert is_it_title(vaga) is False
+
+
+# --- filtro de elegibilidade por formacao (spec 0002) ---
+
+
+def test_formacao_accepts_range_including_target_year():
+    vaga = replace(
+        BASE_VAGA,
+        description="Previsão de conclusão do curso: entre Dezembro/2026 e Dezembro/2027.",
+    )
+    assert passes_formacao_filter(vaga) is True
+
+
+def test_formacao_accepts_from_target_year_onward():
+    vaga = replace(
+        BASE_VAGA,
+        description=(
+            "Formação superior em andamento com previsão de formatura a partir de 12/2027."
+        ),
+    )
+    assert passes_formacao_filter(vaga) is True
+
+
+def test_formacao_accepts_range_phrasing_without_month():
+    vaga = replace(
+        BASE_VAGA,
+        description=(
+            "Disponibilidade para estagiar por pelo menos 1 ano (conclusão entre 2026 e 2027)."
+        ),
+    )
+    assert passes_formacao_filter(vaga) is True
+
+
+def test_formacao_rejects_deadline_before_target_year():
+    vaga = replace(BASE_VAGA, description="Buscamos estudantes com formatura até dez/2026.")
+    assert passes_formacao_filter(vaga) is False
+
+
+def test_formacao_rejects_single_year_before_target():
+    vaga = replace(BASE_VAGA, description="Requisito: conclusão em 2025.")
+    assert passes_formacao_filter(vaga) is False
+
+
+def test_formacao_accepts_when_no_mention():
+    vaga = replace(BASE_VAGA, description="Java, Spring Boot e vontade de aprender.")
+    assert passes_formacao_filter(vaga) is True

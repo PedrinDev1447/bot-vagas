@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "pyproject.toml": {
-    "mtime": 1789589941.2350051,
-    "ast_hash": "90306c22745af1b981aa793207147991",
+    "mtime": 1789590834.5892394,
+    "ast_hash": "c5c4644211de8a399da0cc4c8b80f80d",
     "semantic_hash": ""
   },
   "src/__init__.py": {
@@ -80,13 +80,13 @@
     "semantic_hash": ""
   },
   "src/alerter/telegram.py": {
-    "mtime": 1789590098.6407292,
-    "ast_hash": "eca953df927b3e3ab59895f048a5f0ea",
+    "mtime": 1789600557.9803712,
+    "ast_hash": "bae7b9e6b86cf6b526edfcf69ebf912e",
     "semantic_hash": ""
   },
   "src/main.py": {
-    "mtime": 1789590266.2587233,
-    "ast_hash": "e8a07ac9c730f2f09187a9218ba01364",
+    "mtime": 1789601360.8652143,
+    "ast_hash": "a4d45b1db25d89bf79a9dd86c1ab989a",
     "semantic_hash": ""
   },
   "src/matcher/__init__.py": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "src/matcher/rules.py": {
-    "mtime": 1789590130.7570558,
-    "ast_hash": "d876ee760786f491d249426d9fbd0623",
+    "mtime": 1789601352.1381953,
+    "ast_hash": "2d586d1c90ecd805c722fefc867b4ab2",
     "semantic_hash": ""
   },
   "src/scraper/__init__.py": {
@@ -145,13 +145,53 @@
     "semantic_hash": ""
   },
   "tests/test_matcher.py": {
-    "mtime": 1789590206.9839027,
-    "ast_hash": "77e7d1a89cdcf5f9123810b4ddbb193a",
+    "mtime": 1789601407.3938699,
+    "ast_hash": "391c1200d336824c418df89bdf588f31",
     "semantic_hash": ""
   },
   "tests/test_storage.py": {
     "mtime": 1789590233.4575188,
     "ast_hash": "ace6990cf3d81dcd4967d24a901887ba",
+    "semantic_hash": ""
+  },
+  "tests/test_main.py": {
+    "mtime": 1789601391.7256436,
+    "ast_hash": "a6c2b599a09796ae6b08045c267ae2f3",
+    "semantic_hash": ""
+  },
+  "tests/test_telegram.py": {
+    "mtime": 1789600615.2411134,
+    "ast_hash": "deb7d68bd923721cd42b29fece0a49ec",
+    "semantic_hash": ""
+  },
+  "src/exporter/__init__.py": {
+    "mtime": 1789600539.4814205,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "src/exporter/markdown.py": {
+    "mtime": 1789600551.1955698,
+    "ast_hash": "8c39cdade992186f6baed9d11c83fede",
+    "semantic_hash": ""
+  },
+  "tests/test_exporter.py": {
+    "mtime": 1789600625.6212869,
+    "ast_hash": "a213417defd26b11f20cb21e47a93212",
+    "semantic_hash": ""
+  },
+  "specs/0002-vip-blacklist-formacao-export-ats.md": {
+    "mtime": 1789600717.275972,
+    "ast_hash": "ae206d715be2beb29b0c2db5d7990117",
+    "semantic_hash": ""
+  },
+  "vagas_ats.md": {
+    "mtime": 1789601063.3141375,
+    "ast_hash": "deba4e6b854758bb008591df7f6a9992",
+    "semantic_hash": ""
+  },
+  "specs/0003-fix-company-substring-and-it-title-filter.md": {
+    "mtime": 1789601416.0204964,
+    "ast_hash": "8e297c8899e1c3a60092192444d4ec88",
     "semantic_hash": ""
   }
 }

@@ -38,6 +38,20 @@ def test_format_message_remote_job_shows_remoto_label():
     assert "Remoto" in text
 
 
+def test_format_message_empty_terms_with_vip_explains_bypass():
+    """Vaga alertada so por bypass de empresa VIP (spec 0002) nao pode deixar
+    "Match: " em branco — precisa explicar o motivo do alerta."""
+    text = format_message(BASE_VAGA, [], vip=True)
+    assert "Match: " in text
+    assert "empresa VIP" in text
+    assert "VIP" in text.splitlines()[0]
+
+
+def test_format_message_non_vip_unaffected_by_new_param():
+    text = format_message(BASE_VAGA, ["java"], vip=False)
+    assert "VIP" not in text
+
+
 def test_send_message_posts_token_and_payload(monkeypatch):
     calls = []
 

@@ -8,7 +8,10 @@ com o perfil do dev e alerta via Telegram quando a stack da vaga bate com o perf
 Fluxo: coleta (scraper) -> normalização/persistência (storage) -> match por stack
 (matcher) -> alerta no Telegram (alerter), sem reenviar vaga já notificada.
 
-Perfil de referência para match: Java, Spring Boot, React, TypeScript, AWS.
+Perfil de referência para match (issue #4): CORE_STACK (Java, Spring, TypeScript,
+React, React Native, AWS, Python, Node, Terraform, Docker) aprova sozinha com 1
+termo; ADJACENT_STACK (C#, .NET, Angular, Vue, Kubernetes, Azure, GCP, CI/CD,
+Golang) precisa de 2+ termos. Ver `src/matcher/rules.py`.
 
 ## Stack técnica
 

@@ -267,6 +267,10 @@ Nunca em arquivo versionado.
 | 1 | Fundação + Gupy ponta a ponta (escopo enxuto) | Crítica | ~1 dia / ~25 min | — |
 | 2 | Greenhouse + Lever atrás da mesma interface | Alta | ~1,5 dia / ~25 min | #1 |
 | 3 | Adzuna + validação de `br` | Média | ~1 dia / ~20 min | #1 |
+| 4 | Coleta Eureca | Alta | a estimar | #1 |
+| 5 | Coleta Catho | Alta | a estimar | #1 |
+| 6 | Coleta Hipsters.jobs | Alta | a estimar | #1 |
+| 7 | Coleta Handshake | Alta | a estimar | #1 |
 | X | Dedupe cross-source (hash canônico) | Baixa — não bloqueia #1, #2 ou #3 | ~2h / ~10 min | #1 |
 | Y | Digest 2x/dia (collect/alert separados) | Baixa — não bloqueia #1, #2 ou #3 | ~4h / ~15 min | #1 |
 | Z | Score ponderado (YAML por grupo) | Baixa — não bloqueia #1, #2 ou #3 | ~3h / ~10 min | #1 |
@@ -300,6 +304,25 @@ nem as issues #2 e #3.
    depender de lógica de rate-limit nesta issue, o primeiro run considera
    candidatas apenas vagas com `publishedDate` nas últimas 24h — reduz o
    volume do lote inicial sem tocar no design "um alerta por vaga achada".
+
+### Issues #4-#7 — Novas fontes de coleta (Eureca, Catho, Hipsters.jobs, Handshake)
+
+*Registradas no roadmap pela issue #4 (expansão de radar + auditoria, 2026-09-16).
+Cada uma depende só de #1 pela interface `Scraper` e vira sua própria issue de
+implementação — nenhum parser entra sem payload real capturado da fonte
+(regra do projeto em `CLAUDE.md`).*
+
+| # | Fonte | Observação |
+|---|---|---|
+| 4 | Eureca | Formato do feed a confirmar antes do parser |
+| 5 | Catho | Formato do feed a confirmar antes do parser |
+| 6 | Hipsters.jobs | Formato do feed a confirmar antes do parser |
+| 7 | Handshake | Formato do feed a confirmar antes do parser |
+
+**LinkedIn continua fora do escopo de scraping direto** (reforço do Out of Scope
+abaixo): além de não ter API pública usável, a plataforma bloqueia scraping
+ativamente por IP ban, o que inviabiliza um coletor confiável sem infraestrutura
+de rotação de IP — fora do orçamento de custo zero (D13).
 
 ### Issue #X — Dedupe cross-source
 
