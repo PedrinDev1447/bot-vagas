@@ -4,8 +4,7 @@
   "2": "test_matcher.py",
   "3": "test_telegram.py",
   "4": "What You Must Do When Invoked",
-  "5": "test_storage.py",
-  "6": "GupyScraper",
+  "6": "Vaga",
   "7": "run",
   "8": "bot-vagas",
   "9": "graphify reference: extra exports and benchmark",
@@ -26,7 +25,8 @@
   "24": "storage/__init__.py",
   "25": "tests/__init__.py",
   "26": "VIP/blacklist de empresas, filtro de formação e export Markdown ATS",
-  "27": "base.py",
+  "27": "test_eureca.py",
   "28": "vagas_ats.md",
-  "29": "exporter/__init__.py"
+  "29": "exporter/__init__.py",
+  "30": "GupyScraper"
 }

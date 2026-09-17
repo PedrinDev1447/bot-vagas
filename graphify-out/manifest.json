@@ -55,18 +55,18 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1789603093.43983,
-    "ast_hash": "a8e59488ff1ece03c27a4e2daf9df6f8",
+    "mtime": 1789609496.9374113,
+    "ast_hash": "9e40916c37676789012b2101706ccc41",
     "semantic_hash": ""
   },
   "specs/0001-bot-vagas-estagio-jr-sp.md": {
-    "mtime": 1789603114.9038708,
-    "ast_hash": "f1f5bc3b946f7d59ec7459bd30c93b9f",
+    "mtime": 1789609478.3216474,
+    "ast_hash": "f1d2fe95c18949fb5003678f1fc6d8bb",
     "semantic_hash": ""
   },
   "pyproject.toml": {
-    "mtime": 1789590834.5892394,
-    "ast_hash": "c5c4644211de8a399da0cc4c8b80f80d",
+    "mtime": 1789607260.4247737,
+    "ast_hash": "385f745e074616768b6585a2d2887c7c",
     "semantic_hash": ""
   },
   "src/__init__.py": {
@@ -80,13 +80,13 @@
     "semantic_hash": ""
   },
   "src/alerter/telegram.py": {
-    "mtime": 1789600557.9803712,
-    "ast_hash": "bae7b9e6b86cf6b526edfcf69ebf912e",
+    "mtime": 1789607260.4298577,
+    "ast_hash": "c45fb6ee70f8831d3239ddac589a5798",
     "semantic_hash": ""
   },
   "src/main.py": {
-    "mtime": 1789603067.378384,
-    "ast_hash": "6a7b6c35f8e59bada33c5e8126d8ee69",
+    "mtime": 1789607260.4318583,
+    "ast_hash": "7ebc03f25349061a12fdc0e4808242f9",
     "semantic_hash": ""
   },
   "src/matcher/__init__.py": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "src/matcher/rules.py": {
-    "mtime": 1789603038.4310267,
-    "ast_hash": "ad44a9a9cef7a58c417dd64effb7b29a",
+    "mtime": 1789607260.4338572,
+    "ast_hash": "7a1c02a20c6b215ad6d9d4f65c822f5b",
     "semantic_hash": ""
   },
   "src/scraper/__init__.py": {
@@ -145,8 +145,8 @@
     "semantic_hash": ""
   },
   "tests/test_matcher.py": {
-    "mtime": 1789603275.434002,
-    "ast_hash": "5d606220ceef99ac958c8f407e3633d9",
+    "mtime": 1789607260.4368565,
+    "ast_hash": "ae6dfbd4303f5ec443e9b3ad5fe3ff39",
     "semantic_hash": ""
   },
   "tests/test_storage.py": {
@@ -155,53 +155,78 @@
     "semantic_hash": ""
   },
   "tests/test_main.py": {
-    "mtime": 1789603275.434002,
-    "ast_hash": "34615c93a4980beaffa2e29ca585ade3",
+    "mtime": 1789607260.435857,
+    "ast_hash": "0c38cbbf164a297d9f366fbb7a66cc9d",
     "semantic_hash": ""
   },
   "tests/test_telegram.py": {
-    "mtime": 1789600615.2411134,
-    "ast_hash": "deb7d68bd923721cd42b29fece0a49ec",
+    "mtime": 1789607260.4379299,
+    "ast_hash": "010e83e03802ec2a82aed9d4b8d3db3b",
     "semantic_hash": ""
   },
   "src/exporter/__init__.py": {
-    "mtime": 1789600539.4814205,
+    "mtime": 1789607260.4298577,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   "src/exporter/markdown.py": {
-    "mtime": 1789600551.1955698,
-    "ast_hash": "8c39cdade992186f6baed9d11c83fede",
+    "mtime": 1789607260.4308589,
+    "ast_hash": "b394472bf343fb00919a59349064869c",
     "semantic_hash": ""
   },
   "tests/test_exporter.py": {
-    "mtime": 1789600625.6212869,
-    "ast_hash": "a213417defd26b11f20cb21e47a93212",
+    "mtime": 1789607260.435857,
+    "ast_hash": "16d62567c7e4ed23f37d795c456c3ff3",
     "semantic_hash": ""
   },
   "specs/0002-vip-blacklist-formacao-export-ats.md": {
-    "mtime": 1789600717.275972,
-    "ast_hash": "ae206d715be2beb29b0c2db5d7990117",
+    "mtime": 1789607260.4267726,
+    "ast_hash": "e6847a282928e34c8a718a69db37e798",
     "semantic_hash": ""
   },
   "vagas_ats.md": {
-    "mtime": 1789601063.3141375,
+    "mtime": 1789607260.4389293,
     "ast_hash": "deba4e6b854758bb008591df7f6a9992",
     "semantic_hash": ""
   },
   "specs/0003-fix-company-substring-and-it-title-filter.md": {
-    "mtime": 1789601416.0204964,
-    "ast_hash": "8e297c8899e1c3a60092192444d4ec88",
+    "mtime": 1789607260.4267726,
+    "ast_hash": "258b51b4e97c8668e7f42ab0e6ee300f",
     "semantic_hash": ""
   },
   "src/exporter/audit.py": {
-    "mtime": 1789603046.880763,
-    "ast_hash": "c8903ff8cc5a58a33a8bd0173811205b",
+    "mtime": 1789607260.4308589,
+    "ast_hash": "4be34d00db23770f5ea00479ab7fe6d0",
     "semantic_hash": ""
   },
   "tests/test_audit.py": {
-    "mtime": 1789603275.4334874,
-    "ast_hash": "b263f661e54326b9daf8e55d5eb9700b",
+    "mtime": 1789607260.434857,
+    "ast_hash": "d7425da5177a18bf8957a60c826377f1",
+    "semantic_hash": ""
+  },
+  "src/scraper/eureca.py": {
+    "mtime": 1789611234.5169537,
+    "ast_hash": "e1ca9a677e6e7e8c931405127ca51321",
+    "semantic_hash": ""
+  },
+  "tests/fixtures/eureca_opportunities_response.json": {
+    "mtime": 1789609324.7807846,
+    "ast_hash": "80f425abbcd7a301f6fa0f18dd8c591c",
+    "semantic_hash": ""
+  },
+  "tests/test_eureca.py": {
+    "mtime": 1789611247.143932,
+    "ast_hash": "5ba331d94a0c145d6d98bff52c5d0439",
+    "semantic_hash": ""
+  },
+  "CHANGELOG.md": {
+    "mtime": 1789611408.9882796,
+    "ast_hash": "210b28a9f94a98aec12401126776c7be",
+    "semantic_hash": ""
+  },
+  "TODOS.md": {
+    "mtime": 1789611454.2871618,
+    "ast_hash": "c3873f2020e0f7fdafccb02456abf890",
     "semantic_hash": ""
   }
 }
